@@ -1,0 +1,28 @@
+.container {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+}
+.drag-and-drop {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(auto, 1fr));
+  grid-template-rows: repeat(3, minmax(auto, 1fr));
+}
+
+h1 {
+  padding-bottom: 1em;
+}
+
+.widget {
+  padding: 1em;
+  border-radius: 0.5em;
+  border: 1px solid #f0f0f0;
+  transition: transform 0.3s ease;
+  cursor: move;
+  color: #f0f0f0;
+}
+
+.dragging {
+  opacity: 0.5;
+  transform: scale(1.1);
+}
