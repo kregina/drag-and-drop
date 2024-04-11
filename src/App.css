@@ -17,12 +17,10 @@ h1 {
   padding: 1em;
   border-radius: 0.5em;
   border: 1px solid #f0f0f0;
-  transition: transform 0.3s ease;
   cursor: move;
   color: #f0f0f0;
 }
 
 .dragging {
   opacity: 0.5;
-  transform: scale(1.1);
 }

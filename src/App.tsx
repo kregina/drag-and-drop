@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
 
@@ -36,16 +37,13 @@ const useDragAndDrop = () => {
     setWidgets(mappedData);
   }, []);
 
-  const handleDragStart = useCallback(
-    (e: React.DragEvent<HTMLParagraphElement>, id: string) => {
-      setDraggedId(id);
-      e.dataTransfer.effectAllowed = 'move';
-    },
-    [],
-  );
+  const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
+    setDraggedId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
 
   const handleDragOver = useCallback(
-    (e: React.DragEvent<HTMLParagraphElement>) => {
+    (e: React.DragEvent) => {
       e.preventDefault();
       const draggableElements = [
         ...document.querySelectorAll('.widget:not(.dragging)'),
@@ -65,7 +63,7 @@ const useDragAndDrop = () => {
   );
 
   const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLParagraphElement>) => {
+    (e: React.DragEvent) => {
       e.preventDefault();
       const targetId = hoveredWidgetId;
 
@@ -132,7 +130,8 @@ function App() {
         }}
       >
         {widgets.map((widget) => (
-          <p
+          <motion.div
+            layout
             key={widget.id}
             draggable={!!widget.id && !widget.id.startsWith('placeholder')}
             data-widget-id={widget.id}
@@ -142,7 +141,7 @@ function App() {
             className={`widget ${draggedId === widget.id ? 'dragging' : ''}`}
           >
             {widget.name}
-          </p>
+          </motion.div>
         ))}
       </div>
     </div>
