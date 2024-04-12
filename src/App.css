@@ -24,3 +24,9 @@ h1 {
 .dragging {
   opacity: 0.5;
 }
+
+.hovered {
+  background-color: blue;
+  color: #000;
+  transition: background-color 0.5s ease;
+}

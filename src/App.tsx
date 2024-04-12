@@ -6,6 +6,7 @@ import './App.css';
 interface Widget {
   id: string;
   name: string;
+  draggable?: boolean | undefined;
 }
 
 // Define initial data including potential nulls which are handled later
@@ -31,52 +32,35 @@ const useDragAndDrop = () => {
   const [hoveredWidgetId, setHoveredWidgetId] = useState<string | null>(null);
 
   useEffect(() => {
-    const mappedData: Widget[] = data.map(
-      (item, index) => item || { id: `placeholder-${index}`, name: '' },
+    const mappedData: Widget[] = data.map((item, index) =>
+      item == null
+        ? { id: `placeholder-${index}`, name: '' }
+        : { ...item, draggable: true },
     );
     setWidgets(mappedData);
   }, []);
 
-  const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
+  const handleDragStart = useCallback((e: any, id: string) => {
     setDraggedId(id);
     e.dataTransfer.effectAllowed = 'move';
   }, []);
 
-  const handleDragOver = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      const draggableElements = [
-        ...document.querySelectorAll('.widget:not(.dragging)'),
-      ];
-      const closest = calculateClosestWidget(
-        draggableElements,
-        e.clientX,
-        e.clientY,
-      );
-      if (closest) {
-        setHoveredWidgetId(closest.getAttribute('data-widget-id') || null);
-      } else {
-        setHoveredWidgetId(null);
-      }
-    },
-    [widgets],
-  );
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      const targetId = hoveredWidgetId;
 
-      if (draggedId && targetId) {
+      if (draggedId && hoveredWidgetId) {
         const newWidgets = [...widgets];
         const draggedIndex = newWidgets.findIndex((w) => w.id === draggedId);
-        const targetIndex = newWidgets.findIndex((w) => w.id === targetId);
+        const targetIndex = newWidgets.findIndex(
+          (w) => w.id === hoveredWidgetId,
+        );
 
-        if (
-          draggedIndex >= 0 &&
-          targetIndex >= 0 &&
-          draggedIndex !== targetIndex
-        ) {
+        if (draggedIndex !== targetIndex) {
           [newWidgets[draggedIndex], newWidgets[targetIndex]] = [
             newWidgets[targetIndex],
             newWidgets[draggedIndex],
@@ -90,35 +74,38 @@ const useDragAndDrop = () => {
     [widgets, draggedId, hoveredWidgetId],
   );
 
-  return { widgets, handleDragStart, handleDragOver, handleDrop, draggedId };
-};
+  const handleDragEnter = useCallback(
+    (e: React.DragEvent) => {
+      const target = e.target as HTMLElement;
+      const newHoveredId = target.getAttribute('data-widget-id');
+      if (newHoveredId && newHoveredId !== hoveredWidgetId) {
+        setHoveredWidgetId(newHoveredId);
+      }
+    },
+    [hoveredWidgetId],
+  );
 
-const calculateClosestWidget = (
-  draggableElements: Element[],
-  mouseX: number,
-  mouseY: number,
-): Element | null => {
-  let closest: Element | null = null;
-  let closestDistance = Infinity;
-
-  draggableElements.forEach((element) => {
-    const box = element.getBoundingClientRect();
-    const offsetX = mouseX - (box.left + box.width / 2);
-    const offsetY = mouseY - (box.top + box.height / 2);
-    const distance = Math.sqrt(offsetX ** 2 + offsetY ** 2);
-
-    if (distance < closestDistance) {
-      closest = element;
-      closestDistance = distance;
-    }
-  });
-
-  return closest;
+  return {
+    widgets,
+    handleDragStart,
+    handleDragOver,
+    handleDrop,
+    handleDragEnter,
+    draggedId,
+    hoveredWidgetId,
+  };
 };
 
 function App() {
-  const { widgets, handleDragStart, handleDragOver, handleDrop, draggedId } =
-    useDragAndDrop();
+  const {
+    widgets,
+    handleDragStart,
+    handleDragOver,
+    handleDrop,
+    handleDragEnter,
+    draggedId,
+    hoveredWidgetId,
+  } = useDragAndDrop();
 
   return (
     <div className="container">
@@ -133,12 +120,16 @@ function App() {
           <motion.div
             layout
             key={widget.id}
-            draggable={!!widget.id && !widget.id.startsWith('placeholder')}
+            draggable={widget.draggable}
             data-widget-id={widget.id}
             onDragStart={(e) => handleDragStart(e, widget.id)}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            className={`widget ${draggedId === widget.id ? 'dragging' : ''}`}
+            onDragEnter={handleDragEnter}
+            className={`widget 
+            ${draggedId === widget.id ? 'dragging' : ''}
+            ${hoveredWidgetId === widget.id ? 'hovered' : ''}
+            `}
           >
             {widget.name}
           </motion.div>
