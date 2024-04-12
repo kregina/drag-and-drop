@@ -2,6 +2,8 @@
 
 This project was develop to study the HTML drag and drop API.
 
+[Demo](https://kregina.github.io/drag-and-drop/)
+
 ## Stack:
 
 - React
